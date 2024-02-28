@@ -1,0 +1,17 @@
+#!/bin/sh
+
+
+# Get current volume using pactl
+initvol="$(pactl list sinks | grep 'Volume: front-left' | awk '{print $5}')"
+initvol="${initvol%%%*}"
+
+wjt -p "volume:" -z m -x "$initvol" "$@" | while read vol; do
+        case "$vol" in
+                m)
+                        pactl set-sink-mute @DEFAULT_SINK@ toggle
+                        ;;
+                *)
+                        pactl set-sink-volume @DEFAULT_SINK@ "$vol%"
+                        ;;
+        esac
+done
