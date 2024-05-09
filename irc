@@ -1,0 +1,46 @@
+#!/bin/bash
+
+IRC_DIR="$HOME/irc/irc.libera.chat"
+
+join_channel() {
+    echo "/j #$1" > "$IRC_DIR/in"
+}
+
+mkdir -p "$IRC_DIR"
+
+menu_str="Start Server\nJoin Channel"
+
+action=$(echo -e "$menu_str" | xmenu )
+
+case $action in
+    "Start Server")
+        ii -s irc.libera.chat -n user &
+
+        ;;
+    "Join Channel")
+        if ! pgrep -x "ii" > /dev/null; then
+            echo "Error: ii is not running. Please start the server first."
+            exit 1
+        fi
+
+        channels=$(ls "$IRC_DIR" | grep '^#' | sed 's/#//')
+
+        channel_menu_str=""
+        for channel in $channels; do
+            channel_menu_str+="Join $channel\n"
+        done
+
+        selected_channel=$(echo -e "$channel_menu_str" | xmenu )
+
+        channel_name=$(echo "$selected_channel" | cut -d' ' -f2)
+
+        join_channel "$channel_name"
+
+        st -e lchat ~/irc/irc.libera.chat/#"$channel_name" 
+        ;;
+    *)
+        echo "Invalid choice"
+        exit 1
+        ;;
+esac
+
